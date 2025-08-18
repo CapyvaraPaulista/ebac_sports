@@ -1,12 +1,10 @@
-import { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { Provider } from 'react-redux'
+import { useState } from 'react'
 import Header from './components/Header'
 import Produtos from './containers/Produtos'
+
 import { GlobalStyle } from './styles'
-import { RootState, AppDispatch } from './store/index'
-import { adicionar } from './store/reducers/carrinho'
-import { toggleFavorito } from './store/reducers/favoritos'
-import { setProdutos } from './store/reducers/produtos'
+import { store } from './store'
 
 export type Produto = {
   id: number
@@ -16,40 +14,25 @@ export type Produto = {
 }
 
 function App() {
-  const produtos = useSelector((state: RootState) => state.produtos.itens)
-  const carrinho = useSelector((state: RootState) => state.carrinho.itens)
-  const favoritos = useSelector((state: RootState) => state.favoritos.items)
-  const dispatch = useDispatch<AppDispatch>()
+  const [favoritos, setFavoritos] = useState<Produto[]>([])
 
-  useEffect(() => {
-    fetch('https://fake-api-tau.vercel.app/api/ebac_sports')
-      .then((res) => res.json())
-      .then((res) => {
-        dispatch(setProdutos(res))
-      })
-  }, [dispatch])
-
-  function handleAdicionarAoCarrinho(produto: Produto) {
-    dispatch(adicionar(produto))
-  }
-
-  function handleFavoritar(produto: Produto) {
-    dispatch(toggleFavorito(produto))
+  function favoritar(produto: Produto) {
+    if (favoritos.find((p) => p.id === produto.id)) {
+      const favoritosSemProduto = favoritos.filter((p) => p.id !== produto.id)
+      setFavoritos(favoritosSemProduto)
+    } else {
+      setFavoritos([...favoritos, produto])
+    }
   }
 
   return (
-    <>
+    <Provider store={store}>
       <GlobalStyle />
       <div className="container">
-        <Header favoritos={favoritos} itensNoCarrinho={carrinho} />
-        <Produtos
-          produtos={produtos}
-          favoritos={favoritos}
-          favoritar={handleFavoritar}
-          adicionarAoCarrinho={handleAdicionarAoCarrinho}
-        />
+        <Header favoritos={favoritos} />
+        <Produtos favoritos={favoritos} favoritar={favoritar} />
       </div>
-    </>
+    </Provider>
   )
 }
 

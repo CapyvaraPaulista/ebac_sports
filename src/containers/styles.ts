@@ -13,3 +13,7 @@ export const Produtos = styled.ul`
     grid-template-columns: 1fr;
   }
 `
+
+export const IsLoading = styled.h2`
+  color: black;
+`
